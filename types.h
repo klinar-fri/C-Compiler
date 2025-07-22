@@ -8,7 +8,7 @@ typedef enum{
     tok_name,
     tok_operator,
     tok_separator
-} Token;
+} TokenType;
 
 const char* tokenStrings[6] = {
     "niz",

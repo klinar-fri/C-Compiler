@@ -4,17 +4,42 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+#define STB_DS_IMPLEMENTATION
 #include "./stb_ds.h"
 #include "types.h"
 
 // print to txt file, print to stdout, or default save to dynamic array 
 #define PRINT_TO_FILE 0
-#define PRINT_TO_STDOUT 1
+#define PRINT_TO_STDOUT 0
 
+typedef struct{
+    TokenType tokenType;
+    char* tokenValue; 
+} Token;
 
-void printZnak(Token tok, char znak, FILE* output){
+typedef struct{
+    Token* items;
+    int size;
+} Tokens;
+
+void printTokens(Tokens tokens){
+    for(int i = 0; i < tokens.size; i++){
+        const char* currTokenTypeStr = tokenStrings[tokens.items[i].tokenType];
+        char* currTokenValue = tokens.items[i].tokenValue;
+        printf("%s[%s]\n", currTokenTypeStr, currTokenValue);
+    }
+}
+
+void freeStringsTokens(Tokens tokens){
+    for(int i = 0; i < tokens.size; i++){
+        free(tokens.items[i].tokenValue);
+    }
+}
+
+void printZnak(TokenType tok, char znak, FILE* output){
     fprintf(output, "%s[%c]\n", tokenStrings[tok], znak);
 }
+
 
 int main(){
     // FILE* inputFile = stdin; // uncomment this to read from stdin
@@ -26,8 +51,13 @@ int main(){
     #endif
     char znak = '~';
     char curr;
+    char* newStr;
+    Token currToken;
     int i = 0; // index v currWord
     char currWord[1001];
+    
+    Tokens tokens = {0}; // dynamic array of tokens
+    
     while(znak != EOF){
         znak = getc(inputFile);
 
@@ -45,11 +75,25 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[%c=]\n", tokenStrings[tok_operator], znak);
                     #else
-                    
+                    char* newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
                     #endif
                 }else{
                     ungetc(znak, inputFile);
+                    #if PRINT_TO_STDOUT || PRINT_TO_TXT
                     printZnak(tok_operator, curr, output);
+                    #else
+                    char* newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
+                    #endif
                 }
             break;
             
@@ -63,7 +107,12 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[/=]\n", tokenStrings[tok_operator]);
                     #else
-
+                    char* newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
                     #endif
                 }else if(znak == '/'){
                     znak = getc(inputFile);
@@ -83,7 +132,16 @@ int main(){
                     } 
                 }else{
                     ungetc(znak, inputFile);
+                    #if PRINT_TO_STDOUT || PRINT_TO_TXT
                     printZnak(tok_operator, curr, output);
+                    #else
+                    char* newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
+                    #endif
                 }
             break;
             
@@ -97,11 +155,22 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[%c=]\n", tokenStrings[tok_operator], znak);
                     #else
-
+                    newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
                     #endif
                 }else{
                     ungetc(znak, inputFile);
-                    printZnak(tok_operator, curr, output);
+                    // printZnak(tok_operator, curr, output);
+                    char* newStr = malloc(2 * sizeof(char));
+                    newStr[0] = znak;
+                    newStr[1] = '\0';
+                    Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
                 }
             break;
 
@@ -114,7 +183,13 @@ int main(){
             case '}' : 
             case '[' : 
             case ']' : 
-                printZnak(tok_separator, znak, output);
+                char* newStr = malloc(2 * sizeof(char));
+                newStr[0] = znak;
+                newStr[1] = '\0';
+                Token currToken = {.tokenType = tok_separator, .tokenValue = newStr};
+                arrput(tokens.items, currToken);
+                tokens.size += 1;
+                // printZnak(tok_separator, znak, output);
             break;
             
             // niz
@@ -128,13 +203,19 @@ int main(){
                     currWord[i] = znak;
                 }
                 currWord[i] = '\0';
+                {
                 #if PRINT_TO_FILE
                 fprintf(output, "%s[%s]\n",tokenStrings[tok_str], currWord);
                 #elif PRINT_TO_STDOUT
                 printf("%s[%s]\n",tokenStrings[tok_str], currWord);
                 #else
-
+                char* newStr = malloc((1 + strlen(&currWord[0])) * sizeof(char));
+                strcpy(newStr, currWord);
+                Token currToken = {.tokenType = tok_str, .tokenValue = newStr};
+                arrput(tokens.items, currToken);
+                tokens.size += 1;
                 #endif
+                }
             break;
 
             // rezerviranke
@@ -147,12 +228,17 @@ int main(){
                     }
                     currWord[i] = '\0';
                     ungetc(znak, inputFile);
+
                     #if PRINT_TO_FILE
                     fprintf(output, "%s[%s]\n", tokenStrings[tok_num], currWord);
                     #elif PRINT_TO_STDOUT
                     printf("%s[%s]\n", tokenStrings[tok_num], currWord);
                     #else
-
+                    char* newStr = malloc((1 + strlen(&currWord[0])) * sizeof(char));
+                    strcpy(newStr, currWord);
+                    Token currToken = {.tokenType = tok_num, .tokenValue = newStr};
+                    arrput(tokens.items, currToken);
+                    tokens.size += 1;
                     #endif
                 }else if(isalpha(znak) || znak == '_'){
                     i = 0;
@@ -176,7 +262,11 @@ int main(){
                                 #elif PRINT_TO_STDOUT
                                 printf("%s[%s]\n", tokenStrings[tok_reserved], currWord);
                                 #else
-                                
+                                char* newStr = malloc((1 + strlen(&currWord[0])) * sizeof(char));
+                                strcpy(newStr, currWord);
+                                Token currToken = {.tokenType = tok_reserved, .tokenValue = newStr};
+                                arrput(tokens.items, currToken);
+                                tokens.size += 1;
                                 #endif
                                 printed = true;
                                 break;
@@ -189,13 +279,23 @@ int main(){
                         #elif PRINT_TO_STDOUT
                         printf("%s[%s]\n", tokenStrings[tok_name], currWord);
                         #else
-
+                        char* newStr = malloc((1 + strlen(&currWord[0])) * sizeof(char));
+                        strcpy(newStr, currWord);
+                        Token currToken = {.tokenType = tok_name, .tokenValue = newStr};
+                        arrput(tokens.items, currToken);
+                        tokens.size += 1;
                         #endif
                     }
                 }
             break;
         }
     }
+    #if !PRINT_TO_FILE && !PRINT_TO_STDOUT 
+    printTokens(tokens);
+    freeStringsTokens(tokens);
+    arrfree(tokens.items);
+    #endif
+
     #if PRINT_TO_FILE
     fclose(output);
     #endif
