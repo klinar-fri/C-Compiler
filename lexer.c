@@ -17,7 +17,7 @@ void printZnak(Token tok, char znak, FILE* output){
 }
 
 int main(){
-    // FILE* inputFile = stdin; // change this to read from file
+    // FILE* inputFile = stdin; // uncomment this to read from stdin
     FILE* inputFile = fopen("program.c", "r");
     #if PRINT_TO_FILE
     FILE* output = fopen("tokens.txt", "w");
