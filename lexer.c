@@ -42,8 +42,8 @@ void printZnak(TokenType tok, char znak, FILE* output){
 
 
 int main(){
-    // FILE* inputFile = stdin; // uncomment this to read from stdin
-    FILE* inputFile = fopen("program.c", "r");
+    FILE* inputFile = stdin; // uncomment this to read from stdin
+    // FILE* inputFile = fopen("program.c", "r");
     #if PRINT_TO_FILE
     FILE* output = fopen("tokens.txt", "w");
     #else
@@ -75,9 +75,10 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[%c=]\n", tokenStrings[tok_operator], znak);
                     #else
-                    char* newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
-                    newStr[1] = '\0';
+                    char* newStr = malloc(3 * sizeof(char));
+                    newStr[0] = curr;
+                    newStr[1] = znak;
+                    newStr[2] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
                     tokens.size += 1;
@@ -88,7 +89,7 @@ int main(){
                     printZnak(tok_operator, curr, output);
                     #else
                     char* newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
+                    newStr[0] = curr;
                     newStr[1] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
@@ -107,9 +108,10 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[/=]\n", tokenStrings[tok_operator]);
                     #else
-                    char* newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
-                    newStr[1] = '\0';
+                    char* newStr = malloc(3 * sizeof(char));
+                    newStr[0] = curr;
+                    newStr[1] = znak;
+                    newStr[2] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
                     tokens.size += 1;
@@ -136,7 +138,7 @@ int main(){
                     printZnak(tok_operator, curr, output);
                     #else
                     char* newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
+                    newStr[0] = curr;
                     newStr[1] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
@@ -155,22 +157,26 @@ int main(){
                     #elif PRINT_TO_STDOUT
                     printf("%s[%c=]\n", tokenStrings[tok_operator], znak);
                     #else
-                    newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
-                    newStr[1] = '\0';
+                    newStr = malloc(3 * sizeof(char));
+                    newStr[0] = curr;
+                    newStr[1] = znak;
+                    newStr[2] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
                     tokens.size += 1;
                     #endif
                 }else{
                     ungetc(znak, inputFile);
-                    // printZnak(tok_operator, curr, output);
+                    #if PRINT_TO_STDOUT || PRINT_TO_TXT
+                    printZnak(tok_operator, curr, output);
+                    #else
                     char* newStr = malloc(2 * sizeof(char));
-                    newStr[0] = znak;
+                    newStr[0] = curr;
                     newStr[1] = '\0';
                     Token currToken = {.tokenType = tok_operator, .tokenValue = newStr};
                     arrput(tokens.items, currToken);
                     tokens.size += 1;
+                    #endif
                 }
             break;
 
@@ -189,10 +195,9 @@ int main(){
                 Token currToken = {.tokenType = tok_separator, .tokenValue = newStr};
                 arrput(tokens.items, currToken);
                 tokens.size += 1;
-                // printZnak(tok_separator, znak, output);
             break;
             
-            // niz
+            // nizj
             case '"' : 
                 i = 0;
                 znak = getc(inputFile);
