@@ -29,4 +29,34 @@ const char* reservedKeywords[7] = {
     "while",
 };
 
+typedef struct{
+    TokenType tokenType;
+    char* tokenValue; 
+} Token;
+
+typedef struct{
+    Token* items;
+    int size;
+} Tokens;
+
+void printTokens(Tokens tokens){
+    for(int i = 0; i < tokens.size; i++){
+        const char* currTokenTypeStr = tokenStrings[tokens.items[i].tokenType];
+        char* currTokenValue = tokens.items[i].tokenValue;
+        printf("%s[%s]\n", currTokenTypeStr, currTokenValue);
+    }
+}
+
+void freeStringsTokens(Tokens tokens){
+    for(int i = 0; i < tokens.size; i++){
+        free(tokens.items[i].tokenValue);
+    }
+}
+
+void printZnak(TokenType tok, char znak, FILE* output){
+    fprintf(output, "%s[%c]\n", tokenStrings[tok], znak);
+}
+
+
+
 #endif

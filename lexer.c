@@ -7,39 +7,11 @@
 #define STB_DS_IMPLEMENTATION
 #include "./stb_ds.h"
 #include "types.h"
+#include "parser.h"
 
 // print to txt file, print to stdout, or default save to dynamic array 
 #define PRINT_TO_FILE 0
 #define PRINT_TO_STDOUT 0
-
-typedef struct{
-    TokenType tokenType;
-    char* tokenValue; 
-} Token;
-
-typedef struct{
-    Token* items;
-    int size;
-} Tokens;
-
-void printTokens(Tokens tokens){
-    for(int i = 0; i < tokens.size; i++){
-        const char* currTokenTypeStr = tokenStrings[tokens.items[i].tokenType];
-        char* currTokenValue = tokens.items[i].tokenValue;
-        printf("%s[%s]\n", currTokenTypeStr, currTokenValue);
-    }
-}
-
-void freeStringsTokens(Tokens tokens){
-    for(int i = 0; i < tokens.size; i++){
-        free(tokens.items[i].tokenValue);
-    }
-}
-
-void printZnak(TokenType tok, char znak, FILE* output){
-    fprintf(output, "%s[%c]\n", tokenStrings[tok], znak);
-}
-
 
 int main(){
     FILE* inputFile = stdin; // uncomment this to read from stdin
@@ -295,8 +267,11 @@ int main(){
             break;
         }
     }
+    
+    parseTokens(&tokens);
+
     #if !PRINT_TO_FILE && !PRINT_TO_STDOUT 
-    printTokens(tokens);
+    //printTokens(tokens);
     freeStringsTokens(tokens);
     arrfree(tokens.items);
     #endif
